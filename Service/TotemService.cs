@@ -7,10 +7,41 @@ using Oracle.ManagedDataAccess.Types;
 public class TotemService : ITotemService
 {
     private readonly string _connectionString;
+    private string _package = "pkg_totem_senha";
 
     public TotemService(string connectionString)
     {
         _connectionString = connectionString;
+    }
+
+    public void GerarSenha(string codigoMaquina, int cdFila, string tpFila, out string valido, out string mensagem, out string cdSenha)
+    {
+        using (OracleConnection connection = new OracleConnection(_connectionString))
+        {
+            connection.Open();
+
+            using (OracleCommand command = new OracleCommand(_package + ".pr_gerar_senha", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+
+                // Parâmetros de entrada
+                command.Parameters.Add("pCodigoMaquina", OracleDbType.Varchar2).Value = codigoMaquina;
+                command.Parameters.Add("pCdFila", OracleDbType.Int32).Value = cdFila;
+                command.Parameters.Add("pTpFila", OracleDbType.Varchar2).Value = tpFila;
+
+                // Parâmetros de saída
+                command.Parameters.Add("pValido", OracleDbType.Varchar2).Direction = ParameterDirection.Output;
+                command.Parameters.Add("pTxMensagem", OracleDbType.Varchar2, 64).Direction = ParameterDirection.Output;
+                command.Parameters.Add("pCdSenha", OracleDbType.Varchar2, 10).Direction = ParameterDirection.Output;
+
+                command.ExecuteNonQuery();
+
+                // Obter valores de parâmetros de saída
+                valido = command.Parameters["pValido"].Value.ToString();
+                mensagem = command.Parameters["pTxMensagem"].Value.ToString();
+                cdSenha = command.Parameters["pCdSenha"].Value.ToString();
+            }
+        }
     }
 
     public RetornaFilasResult RetornaFilas(string codigoMaquina)
@@ -19,7 +50,7 @@ public class TotemService : ITotemService
         {
             connection.Open();
 
-            var command = new OracleCommand("pkg_totem_senha.pr_retorna_filas", connection)
+            var command = new OracleCommand(_package + ".pr_retorna_filas", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -59,6 +90,41 @@ public class TotemService : ITotemService
                 TxMensagem = txMensagem
             };
         }
+    }
+
+    public List<TipoFilaModel> RetornaTiposFila()
+    {
+        List<TipoFilaModel> tiposFila = new List<TipoFilaModel>();
+
+        using (OracleConnection connection = new OracleConnection(_connectionString))
+        {
+            connection.Open();
+
+            using (OracleCommand command = new OracleCommand(_package + ".pr_retorna_tipos_fila", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+
+                // Parâmetros de saída
+                command.Parameters.Add("pTiposFila", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+
+                using (OracleDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        TipoFilaModel tipoFila = new TipoFilaModel
+                        {
+                            tipo = reader["tpfila"].ToString(),
+                            descricao = reader["ds_tpfila"].ToString(),
+                            observacao = reader["obs_tpfila"].ToString()
+                        };
+
+                        tiposFila.Add(tipoFila);
+                    }
+                }
+            }
+        }
+
+        return tiposFila;
     }
 
 

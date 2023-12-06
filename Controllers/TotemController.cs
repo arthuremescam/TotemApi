@@ -10,9 +10,31 @@ public class TotemController : ControllerBase
     {
         _totemService = totemService;
     }
+   
+    [HttpPost("gerar-senha")]
+    public IActionResult GerarSenha([FromBody] GerarSenhaRequest request)
+    {
+        try
+        {
+            _totemService.GerarSenha(request.codigoMaquina, request.cdFila, request.tpFila, out var valido, out var mensagem, out var cdSenha);
 
-    [HttpPost("retorna-filas/{codigoMaquina}")]
-    public IActionResult RetornaFilas(string codigoMaquina)
+            var response = new GerarSenhaResponse
+            {
+                valido = valido,
+                mensagem = mensagem,
+                cdSenha = cdSenha
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+        }
+    }
+
+    [HttpPost("retornaFilas")]
+    public IActionResult RetornaFilas([FromQuery] string codigoMaquina)
     {
         try
         {
@@ -25,4 +47,19 @@ public class TotemController : ControllerBase
             return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
         }
     }
+
+    [HttpGet("retorna-tipos-fila")]
+    public IActionResult RetornaTiposFila()
+    {
+        try
+        {
+            var tiposFila = _totemService.RetornaTiposFila();
+            return Ok(tiposFila);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+        }
+    }
+
 }
