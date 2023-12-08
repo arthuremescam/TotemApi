@@ -33,7 +33,7 @@ public class TotemController : ControllerBase
         }
     }
 
-    [HttpPost("retornaFilas")]
+    [HttpPost("retorna-filas")]
     public IActionResult RetornaFilas([FromQuery] string codigoMaquina)
     {
         try
@@ -48,7 +48,7 @@ public class TotemController : ControllerBase
         }
     }
 
-    [HttpGet("retorna-tipos-fila")]
+    [HttpPost("retorna-tipos-fila")]
     public IActionResult RetornaTiposFila()
     {
         try
