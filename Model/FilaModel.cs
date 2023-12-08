@@ -2,6 +2,6 @@ namespace TotemApi.Models;
 
 public class FilaModel
 {
-    public  string codigoMaquina { get; set; }
+    public  string codigoFila { get; set; }
     public string descricaoFila { get; set; }
 }

@@ -73,7 +73,7 @@ public class TotemService : ITotemService
                 var fila = new FilaModel
                 {
                     // Ajuste de acordo com as colunas reais
-                    codigoMaquina = reader["cdfila"].ToString(),
+                    codigoFila = reader["cdfila"].ToString(),
                     descricaoFila = reader["dsfila"].ToString()
                 };
 
